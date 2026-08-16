@@ -1,26 +1,34 @@
 import { useState, useEffect } from 'react'
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/router'
 
 export default function Admin() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login')
+    }
+  }, [status, router])
 
   useEffect(() => {
     if (!session) return
     setLoading(true)
-    fetch('/api/admin/submissions').then(r => r.json()).then(data => { setSubmissions(data || []); setLoading(false) })
+    fetch('/api/admin/submissions')
+      .then(r => r.json())
+      .then(data => { setSubmissions(data || []); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [session])
 
-  if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-full max-w-md bg-white p-6 rounded shadow">
-          <h2 className="text-xl font-bold mb-4">Admin — Login</h2>
-          <LoginForm />
-        </div>
-      </div>
-    )
+  if (status === 'loading' || status === 'unauthenticated') {
+    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>
+  }
+
+  if (session.user.mustChangePassword) {
+    return <ChangePasswordForm />
   }
 
   return (
@@ -40,13 +48,13 @@ export default function Admin() {
               <tr className="text-left border-b">
                 <th className="p-2">ID</th>
                 <th className="p-2">Email</th>
-                <th className="p-2">Data</th>
+                <th className="p-2">Dados</th>
                 <th className="p-2">Criado</th>
               </tr>
             </thead>
             <tbody>
               {submissions.map(s => (
-                <tr key={s.id} className="border-b">
+                <tr key={s.id} className="border-b align-top">
                   <td className="p-2">{s.id}</td>
                   <td className="p-2">{s.email}</td>
                   <td className="p-2"><pre className="whitespace-pre-wrap">{s.data}</pre></td>
@@ -61,27 +69,39 @@ export default function Admin() {
   )
 }
 
-function LoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+
+function ChangePasswordForm() {
+  const { data: session, update } = useSession()
+  const [newPassword, setNewPassword] = useState('')
   const [status, setStatus] = useState('')
 
   const submit = async (e) => {
     e.preventDefault()
-    setStatus('Entrando...')
-    const res = await signIn('credentials', { redirect: false, email, password })
-    if (res?.error) setStatus('Erro: ' + res.error)
-    else setStatus('Logado')
+    setStatus('Atualizando...')
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: session.user.email, password: newPassword }),
+    })
+    const payload = await res.json()
+    if (!res.ok) {
+      setStatus(payload.error || 'Erro ao alterar senha')
+      return
+    }
+    await update()
+    setStatus('Senha alterada com sucesso!')
+    window.location.reload()
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <input placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-2 border rounded" />
-      <input placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} type="password" className="w-full p-2 border rounded" />
-      <div className="flex items-center gap-3">
-        <button className="px-4 py-2 bg-blue-600 text-white rounded" type="submit">Entrar</button>
-        <div>{status}</div>
-      </div>
-    </form>
+    <div className="min-h-screen flex items-center justify-center">
+      <form onSubmit={submit} className="w-full max-w-md bg-white p-6 rounded shadow">
+        <h2 className="text-xl font-bold mb-4">Trocar senha</h2>
+        <p className="mb-4 text-sm text-gray-600">Sua senha atual é temporária. Defina uma nova senha para continuar.</p>
+        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Nova senha" className="w-full p-2 border rounded mb-3" />
+        <button type="submit" className="w-full bg-green-600 text-white rounded px-4 py-2">Salvar nova senha</button>
+        <div className="mt-3">{status}</div>
+      </form>
+    </div>
   )
 }

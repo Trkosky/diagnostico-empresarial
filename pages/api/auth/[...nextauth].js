@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -19,7 +19,11 @@ export const authOptions = {
         if (!user) return null
         const ok = await bcrypt.compare(credentials.password, user.password)
         if (!ok) return null
-        return { id: user.id, email: user.email }
+        return {
+          id: user.id,
+          email: user.email,
+          mustChangePassword: user.mustChangePassword,
+        }
       },
     }),
   ],
@@ -28,11 +32,17 @@ export const authOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id
+      if (user) {
+        token.id = user.id
+        token.mustChangePassword = user.mustChangePassword
+      }
       return token
     },
     async session({ session, token }) {
-      if (token) session.user.id = token.id
+      if (token) {
+        session.user.id = token.id
+        session.user.mustChangePassword = !!token.mustChangePassword
+      }
       return session
     },
   },
