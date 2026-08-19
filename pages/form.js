@@ -1,6 +1,17 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 
+function formatBRL(value) {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return ''
+  const number = parseInt(digits, 10) / 100
+  return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
+function parseBRL(formatted) {
+  return formatted.replace(/\./g, '').replace(',', '.').replace('R$', '').trim()
+}
+
 const initial = {
   email: '',
   razaoSocial: '',
@@ -30,6 +41,11 @@ export default function Form() {
   const [enviado, setEnviado] = useState(false)
 
   const set = (field) => (e) => setData({ ...data, [field]: e.target.value })
+
+  const setCurrency = (field) => (e) => {
+    const formatted = formatBRL(e.target.value)
+    setData({ ...data, [field]: formatted })
+  }
 
   const submit = async (e) => {
     e.preventDefault()
@@ -90,8 +106,8 @@ export default function Form() {
         <label className="block mb-1 font-medium">Cidade de operacionalização</label>
         <input value={data.cidade} onChange={set('cidade')} className="w-full p-2 border rounded mb-4" />
 
-        <label className="block mb-1 font-medium">Faturamento médio Mensal (R$)</label>
-        <input value={data.faturamentoMensal} onChange={set('faturamentoMensal')} className="w-full p-2 border rounded mb-4" />
+        <label className="block mb-1 font-medium">Faturamento médio Mensal</label>
+        <input value={data.faturamentoMensal} onChange={setCurrency('faturamentoMensal')} placeholder="R$ 0,00" className="w-full p-2 border rounded mb-4" />
 
         <label className="block mb-1 font-medium">Quantas filiais a empresa possui?</label>
         <input value={data.filiais} onChange={set('filiais')} className="w-full p-2 border rounded mb-4" />
@@ -102,8 +118,8 @@ export default function Form() {
         <label className="block mb-1 font-medium">Quantos veículos compõem a frota?</label>
         <input value={data.veiculos} onChange={set('veiculos')} className="w-full p-2 border rounded mb-4" />
 
-        <label className="block mb-1 font-medium">Faturamento de Terceirização (R$/mês)</label>
-        <input value={data.faturamentoTerceirizacao} onChange={set('faturamentoTerceirizacao')} className="w-full p-2 border rounded mb-4" />
+        <label className="block mb-1 font-medium">Faturamento de Terceirização (mês)</label>
+        <input value={data.faturamentoTerceirizacao} onChange={setCurrency('faturamentoTerceirizacao')} placeholder="R$ 0,00" className="w-full p-2 border rounded mb-4" />
 
         <hr className="my-4" />
 
