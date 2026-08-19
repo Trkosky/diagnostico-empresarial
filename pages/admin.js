@@ -187,14 +187,89 @@ export default function Admin() {
         {/* Conteúdo */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {tab === 'submissions' && <SubmissionsTab submissions={submissions} loading={loading} />}
-          {tab === 'users' && <div className="p-6"><CreateUserForm /></div>}
+          {tab === 'users' && <div className="p-6"><UsersPanel session={session} /></div>}
         </div>
       </div>
     </div>
   )
 }
 
-function CreateUserForm() {
+function UsersPanel({ session }) {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchUsers = () => {
+    setLoading(true)
+    fetch('/api/admin/users')
+      .then(r => r.json())
+      .then(data => { setUsers(data || []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(() => { fetchUsers() }, [])
+
+  const deleteUser = async (id, email) => {
+    if (!confirm(`Excluir o usuário "${email}"? Esta ação não pode ser desfeita.`)) return
+    await fetch('/api/admin/users', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    fetchUsers()
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Lista de usuários */}
+      <div>
+        <h3 className="font-semibold mb-3">Usuários cadastrados</h3>
+        {loading ? <p className="text-gray-500 text-sm">Carregando...</p> : (
+          <div className="border rounded overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wide border-b">
+                  <th className="p-3">Nome</th>
+                  <th className="p-3">E-mail</th>
+                  <th className="p-3">Criado em</th>
+                  <th className="p-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.id} className="border-b last:border-0">
+                    <td className="p-3 font-medium">{u.name || '-'}</td>
+                    <td className="p-3 text-gray-600">{u.email}</td>
+                    <td className="p-3 text-gray-400">{new Date(u.createdAt).toLocaleDateString('pt-BR')}</td>
+                    <td className="p-3 text-right">
+                      {u.id !== session.user.id ? (
+                        <button
+                          onClick={() => deleteUser(u.id, u.email)}
+                          className="text-red-500 hover:text-red-700 text-xs font-medium px-2 py-1 rounded hover:bg-red-50"
+                        >
+                          Excluir
+                        </button>
+                      ) : (
+                        <span className="text-xs text-gray-400">Você</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Formulário de criação */}
+      <div className="border-t pt-6">
+        <h3 className="font-semibold mb-4">Criar novo usuário</h3>
+        <CreateUserForm onCreated={fetchUsers} />
+      </div>
+    </div>
+  )
+}
+
+function CreateUserForm({ onCreated }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [tempPassword, setTempPassword] = useState(true)
@@ -212,8 +287,15 @@ function CreateUserForm() {
     })
     const data = await res.json()
     setLoading(false)
-    if (!res.ok) { setError(data.error || 'Erro') }
-    else { setMsg(`Usuário "${email}" criado com sucesso.`); setEmail(''); setPassword('') }
+    if (!res.ok) {
+      setError(data.error || 'Erro')
+    } else {
+      const emailInfo = data.emailSent ? ' E-mail de boas-vindas enviado.' : ` E-mail não enviado${data.emailError ? ': ' + data.emailError : ''}.`
+      setMsg(`Usuário "${email}" criado.${emailInfo}`)
+      setEmail('')
+      setPassword('')
+      if (onCreated) onCreated()
+    }
   }
 
   return (
