@@ -31,6 +31,30 @@ function badge(value) {
   return <span className="text-gray-700">{value || '-'}</span>
 }
 
+function printReport(data, createdAt) {
+  const LABELS_LIST = Object.entries(LABELS).filter(([key]) => data[key])
+  const rows = LABELS_LIST.map(([key, label]) => {
+    const val = data[key]
+    const badge = val === 'Sim'
+      ? `<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px">Sim</span>`
+      : val === 'Não'
+      ? `<span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px">Não</span>`
+      : `<span style="color:#1e293b">${val || '-'}</span>`
+    return `<tr><td style="padding:7px 12px;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:12px;width:50%">${label}</td><td style="padding:7px 12px;border-bottom:1px solid #f1f5f9;font-size:12px">${badge}</td></tr>`
+  }).join('')
+
+  const win = window.open('', '_blank', 'width=800,height=700')
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Diagnóstico — ${data.razaoSocial || ''}</title>
+  <style>body{font-family:sans-serif;margin:0;padding:24px;color:#1e293b} h2{color:#1d4ed8;margin:0} p{color:#64748b;font-size:13px;margin:4px 0 20px} table{width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden} @media print{button{display:none!important}}</style>
+  </head><body>
+  <h2>Diagnóstico Empresarial</h2>
+  <p>${data.razaoSocial || ''} · CNPJ ${data.cnpj || '-'} · ${new Date(createdAt).toLocaleString('pt-BR')}</p>
+  <table>${rows}</table>
+  <div style="text-align:right;margin-top:16px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px">Salvar como PDF</button></div>
+  </body></html>`)
+  win.document.close()
+}
+
 function SubmissionModal({ sub, onClose }) {
   let data = {}
   try { data = JSON.parse(sub.data) } catch {}
@@ -43,7 +67,13 @@ function SubmissionModal({ sub, onClose }) {
             <h3 className="text-lg font-bold">{data.razaoSocial || 'Sem nome'}</h3>
             <p className="text-sm text-gray-500">{data.cnpj} · {new Date(sub.createdAt).toLocaleString('pt-BR')}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => printReport(data, sub.createdAt)}
+              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+              Baixar PDF
+            </button>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+          </div>
         </div>
 
         <div className="p-6">
