@@ -22,18 +22,18 @@ export const authOptions = {
         return {
           id: user.id,
           email: user.email,
+          name: user.name,
           mustChangePassword: user.mustChangePassword,
         }
       },
     }),
   ],
-  session: {
-    strategy: 'jwt',
-  },
+  session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.name = user.name
         token.mustChangePassword = user.mustChangePassword
       }
       return token
@@ -41,6 +41,7 @@ export const authOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id
+        session.user.name = token.name
         session.user.mustChangePassword = !!token.mustChangePassword
       }
       return session
