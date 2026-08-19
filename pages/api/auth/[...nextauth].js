@@ -23,6 +23,7 @@ export const authOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
+          isAdmin: user.isAdmin,
           mustChangePassword: user.mustChangePassword,
         }
       },
@@ -34,6 +35,7 @@ export const authOptions = {
       if (user) {
         token.id = user.id
         token.name = user.name
+        token.isAdmin = user.isAdmin
         token.mustChangePassword = user.mustChangePassword
       }
       return token
@@ -42,6 +44,7 @@ export const authOptions = {
       if (token) {
         session.user.id = token.id
         session.user.name = token.name
+        session.user.isAdmin = !!token.isAdmin
         session.user.mustChangePassword = !!token.mustChangePassword
       }
       return session

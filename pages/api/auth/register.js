@@ -54,6 +54,7 @@ export default async function handler(req, res) {
 
   const session = await getServerSession(req, res, authOptions)
   if (!session) return res.status(401).json({ error: 'Não autorizado' })
+  if (!session.user.isAdmin) return res.status(403).json({ error: 'Acesso restrito a administradores' })
 
   const { email, password, mustChangePassword } = req.body
   if (!email || !password) return res.status(400).json({ error: 'E-mail e senha são obrigatórios' })

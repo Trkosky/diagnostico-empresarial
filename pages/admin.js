@@ -176,7 +176,10 @@ export default function Admin() {
 
         {/* Abas */}
         <div className="flex gap-2">
-          {[['submissions', `Respostas (${submissions.length})`], ['users', 'Usuários']].map(([key, label]) => (
+          {[
+            ['submissions', `Respostas (${submissions.length})`],
+            ...(session.user.isAdmin ? [['users', 'Usuários']] : []),
+          ].map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
               className={`px-4 py-2 rounded text-sm font-medium transition-colors ${tab === key ? 'bg-blue-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>
               {label}
@@ -230,6 +233,7 @@ function UsersPanel({ session }) {
                 <tr className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wide border-b">
                   <th className="p-3">Nome</th>
                   <th className="p-3">E-mail</th>
+                  <th className="p-3">Perfil</th>
                   <th className="p-3">Criado em</th>
                   <th className="p-3"></th>
                 </tr>
@@ -239,6 +243,11 @@ function UsersPanel({ session }) {
                   <tr key={u.id} className="border-b last:border-0">
                     <td className="p-3 font-medium">{u.name || '-'}</td>
                     <td className="p-3 text-gray-600">{u.email}</td>
+                    <td className="p-3">
+                      {u.isAdmin
+                        ? <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">Admin</span>
+                        : <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">Usuário</span>}
+                    </td>
                     <td className="p-3 text-gray-400">{new Date(u.createdAt).toLocaleDateString('pt-BR')}</td>
                     <td className="p-3 text-right">
                       {u.id !== session.user.id ? (
