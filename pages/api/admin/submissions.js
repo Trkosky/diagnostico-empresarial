@@ -9,7 +9,10 @@ export default async function handler(req, res) {
   if (!session) return res.status(401).json({ error: 'Unauthorized' })
 
   try {
-    const subs = await prisma.submission.findMany({ orderBy: { createdAt: 'desc' } })
+    const subs = await prisma.submission.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+    })
     return res.status(200).json(subs)
   } catch (err) {
     console.error(err)
