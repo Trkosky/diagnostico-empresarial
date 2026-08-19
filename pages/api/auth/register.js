@@ -17,7 +17,7 @@ async function sendWelcomeEmail(email, password, mustChangePassword, createdByNa
 
   try {
     const result = await resend.emails.send({
-      from: 'Diagnóstico Empresarial <onboarding@resend.dev>',
+      from: 'Diagnóstico Empresarial <noreply@rmxassociados.com.br>',
       to: email,
       subject: 'Seu acesso ao Diagnóstico Empresarial',
       html: `
