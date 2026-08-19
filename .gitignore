@@ -4,3 +4,5 @@ node_modules
 dev.db
 /.idea
 /.vscode
+.vercel
+.claude
