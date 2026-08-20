@@ -103,7 +103,7 @@ export default function Form() {
           <option>Normal</option>
         </select>
 
-        <label className="block mb-1 font-medium">Cidade de operacionalização</label>
+        <label className="block mb-1 font-medium">Cidade da matriz</label>
         <input value={data.cidade} onChange={set('cidade')} className="w-full p-2 border rounded mb-4" />
 
         <label className="block mb-1 font-medium">Faturamento médio Mensal</label>

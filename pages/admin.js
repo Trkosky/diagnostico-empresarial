@@ -10,7 +10,7 @@ const LABELS = {
   email: 'E-mail',
   regimeFederal: 'Regime Federal',
   regimeEstadual: 'Regime Estadual',
-  cidade: 'Cidade',
+  cidade: 'Cidade da matriz',
   faturamentoMensal: 'Faturamento Mensal',
   filiais: 'Filiais',
   colaboradores: 'Colaboradores',
