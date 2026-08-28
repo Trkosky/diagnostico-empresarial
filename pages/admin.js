@@ -379,7 +379,7 @@ function ChangePasswordForm() {
     })
     const payload = await res.json()
     if (!res.ok) { setStatus(payload.error || 'Erro'); return }
-    await update()
+    await update({ mustChangePassword: false })
     window.location.reload()
   }
 

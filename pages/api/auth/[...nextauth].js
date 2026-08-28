@@ -31,12 +31,15 @@ export const authOptions = {
   ],
   session: { strategy: 'jwt' },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
         token.name = user.name
         token.isAdmin = user.isAdmin
         token.mustChangePassword = user.mustChangePassword
+      }
+      if (trigger === 'update' && session?.mustChangePassword === false) {
+        token.mustChangePassword = false
       }
       return token
     },
