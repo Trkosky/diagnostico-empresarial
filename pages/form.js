@@ -22,6 +22,7 @@ const initial = {
   faturamentoMensal: '',
   filiais: '',
   colaboradores: '',
+  autonomos: '',
   veiculos: '',
   faturamentoTerceirizacao: '',
   conciliacaoBancaria: '',
@@ -114,6 +115,9 @@ export default function Form() {
 
         <label className="block mb-1 font-medium">Número de Colaboradores</label>
         <input value={data.colaboradores} onChange={set('colaboradores')} className="w-full p-2 border rounded mb-4" />
+
+        <label className="block mb-1 font-medium">Número de Vínculos de autônomos/subcontratados</label>
+        <input value={data.autonomos} onChange={set('autonomos')} className="w-full p-2 border rounded mb-4" />
 
         <label className="block mb-1 font-medium">Quantos veículos compõem a frota?</label>
         <input value={data.veiculos} onChange={set('veiculos')} className="w-full p-2 border rounded mb-4" />
